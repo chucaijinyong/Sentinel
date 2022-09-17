@@ -15,6 +15,16 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,16 +32,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
  * <p>
@@ -45,6 +45,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @author jialiang.linjl
  * @author Eric Zhao
  * @author Weihua
+ * FlowRuleManager 流控管理器。 注意：一个资源有多个流控规则
  */
 public class FlowRuleManager {
 
@@ -87,6 +88,7 @@ public class FlowRuleManager {
      * Flow rules can also be set by {@link #loadRules(List)} directly.
      *
      * @param property the property to listen.
+     * 为属性注册监听器
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
         AssertUtil.notNull(property, "property cannot be null");
@@ -115,6 +117,7 @@ public class FlowRuleManager {
      * Load {@link FlowRule}s, former rules will be replaced.
      *
      * @param rules new rules to load.
+     * 加载规则
      */
     public static void loadRules(List<FlowRule> rules) {
         currentProperty.updateValue(rules);
@@ -146,9 +149,13 @@ public class FlowRuleManager {
         return true;
     }
 
+    /**
+    * 规则属性监听器
+    */
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override
+//        更新内存
         public synchronized void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
             if (rules != null) {

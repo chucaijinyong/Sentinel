@@ -19,6 +19,7 @@ package com.alibaba.csp.sentinel.property;
  * This class holds callback method when {@link SentinelProperty#updateValue(Object)} need inform the listener
  *
  * @author jialiang.linjl
+ * 属性监听器，用于流控规则的加载和更新
  */
 public interface PropertyListener<T> {
 

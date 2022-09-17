@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * @author leyou
@@ -39,6 +39,9 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
 
     private static final int MAX_RULES_SIZE = 10000;
 
+    /**
+    * 三个缓存对象的保存，id为不同的实现规则生成的
+    */
     @Override
     public T save(T entity) {
         if (entity.getId() == null) {
@@ -46,6 +49,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
         }
         T processedEntity = preProcess(entity);
         if (processedEntity != null) {
+//            allRules储存规则id和规则的数据
             allRules.put(processedEntity.getId(), processedEntity);
             machineRules.computeIfAbsent(MachineInfo.of(processedEntity.getApp(), processedEntity.getIp(),
                 processedEntity.getPort()), e -> new ConcurrentHashMap<>(32))

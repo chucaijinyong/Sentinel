@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.datasource.nacos;
 
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
@@ -32,6 +25,10 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Properties;
+import java.util.concurrent.*;
 
 /**
  * A read-only {@code DataSource} with Nacos backend. When the data in Nacos backend has been modified,
@@ -39,6 +36,7 @@ import com.alibaba.nacos.api.config.listener.Listener;
  *
  * @author Eric Zhao
  */
+@Slf4j
 public class NacosDataSource<T> extends AbstractDataSource<String, T> {
 
     private static final int DEFAULT_TIMEOUT = 3000;
@@ -97,16 +95,24 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
                 return pool;
             }
 
+//            nacos的配置文件发生变化会触发监听器的行为
             @Override
             public void receiveConfigInfo(final String configInfo) {
                 RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
                     properties, dataId, groupId, configInfo);
+                log.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
+                        properties, dataId, groupId, configInfo);
+
+//                解析变更的配置，将最新的配置更新到缓存
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
+                log.info("newValue"+newValue);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
             }
         };
+//        初始化配置文件监听器，将配置文件和监听器进行绑定
         initNacosListener();
+//        从nacos中加载最新配置到缓存
         loadInitialConfig();
     }
 
@@ -122,6 +128,9 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         }
     }
 
+    /**
+    * 为配置增加监听器
+    */
     private void initNacosListener() {
         try {
             this.configService = NacosFactory.createConfigService(this.properties);
@@ -133,6 +142,9 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         }
     }
 
+    /**
+    * 通过dataId和groupId，从配置中心获取配置文件
+    */
     @Override
     public String readSource() throws Exception {
         if (configService == null) {

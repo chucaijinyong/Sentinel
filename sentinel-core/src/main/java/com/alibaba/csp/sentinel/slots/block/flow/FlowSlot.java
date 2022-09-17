@@ -179,7 +179,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {
-            // Flow rule map should not be null.
+            // Flow rule map should not be null. 从内存中取出所有规则
             Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
             return flowRules.get(resource);
         }

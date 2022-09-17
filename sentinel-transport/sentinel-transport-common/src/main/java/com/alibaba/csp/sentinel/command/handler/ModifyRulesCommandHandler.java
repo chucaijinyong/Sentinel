@@ -15,27 +15,27 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.net.URLDecoder;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.VersionUtil;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.VersionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+
+import java.net.URLDecoder;
+import java.util.List;
 
 import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry.*;
 
@@ -71,10 +71,13 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         RecordLog.info("Receiving rule change (type: {}): {}", type, data);
 
         String result = "success";
-
+//        判断属于那种类型，进行处理
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
+//            解析流控规则，并加载规则，更新最新规则到缓存map中
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);
+//            获取WritableDataSource<List<FlowRule>> flowDataSource写数据源，此处是扩展点，我们只需要实现WritableDataSource
+//            通过该方法WritableDataSourceRegistry.registerFlowDataSource注册进去就行，参考com.tuling.sentinel.extension.filepull.FileDataSourceInit.dealDegradeRules
             if (!writeToDataSource(getFlowDataSource(), flowRules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
