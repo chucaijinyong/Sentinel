@@ -53,18 +53,17 @@ public final class NacosConfigUtil {
     //超时时间
     public static final int READ_TIMEOUT = 3000;
 
-    private NacosConfigUtil() {}
+    private NacosConfigUtil() {
+    }
 
 
     /**
-     * RuleEntity----->Rule
+     * RuleEntity----->FlowRule
      * @param entities
      * @return
      */
-    public static String convertToRule(List<? extends RuleEntity> entities){
-        return JSON.toJSONString(
-                entities.stream().map(r -> r.toRule())
-                        .collect(Collectors.toList()));
+    public static String convertToRule(List<? extends RuleEntity> entities) {
+        return JSON.toJSONString(entities.stream().map(RuleEntity::toRule).collect(Collectors.toList()));
     }
 
 }

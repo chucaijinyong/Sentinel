@@ -29,6 +29,9 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 public abstract class AbstractDataSource<S, T> implements ReadableDataSource<S, T> {
 
     protected final Converter<S, T> parser;
+    /**
+    * sentinel的属性，其中的泛型就是从配置中心获取的String数据转换为的List<Rule>规则集合
+    */
     protected final SentinelProperty<T> property;
 
     public AbstractDataSource(Converter<S, T> parser) {
@@ -39,6 +42,9 @@ public abstract class AbstractDataSource<S, T> implements ReadableDataSource<S, 
         this.property = new DynamicSentinelProperty<T>();
     }
 
+    /**
+    * 加载配置，将配置解析为sentinel要求的格式
+    */
     @Override
     public T loadConfig() throws Exception {
         return loadConfig(readSource());

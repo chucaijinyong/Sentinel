@@ -42,8 +42,7 @@ public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRul
             return;
         }
         //发布配置到Nacos配置中心，会在nacos配置中心生成配置文件
-        configService.publishConfig(
-                app + NacosConfigUtil.FLOW_DATA_ID_POSTFIX,
-            NacosConfigUtil.GROUP_ID, NacosConfigUtil.convertToRule(rules));
+        configService.publishConfig(app + NacosConfigUtil.FLOW_DATA_ID_POSTFIX, NacosConfigUtil.GROUP_ID,
+                NacosConfigUtil.convertToRule(rules));
     }
 }

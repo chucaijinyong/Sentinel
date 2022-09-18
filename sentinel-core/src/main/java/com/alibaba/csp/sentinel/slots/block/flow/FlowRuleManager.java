@@ -51,6 +51,9 @@ public class FlowRuleManager {
 
     private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
 
+    /**
+    * 流控属性监听器
+    */
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
@@ -88,13 +91,14 @@ public class FlowRuleManager {
      * Flow rules can also be set by {@link #loadRules(List)} directly.
      *
      * @param property the property to listen.
-     * 为属性注册监听器
+     * 为属性注册监听器，并将规则刷新本地内存
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
         AssertUtil.notNull(property, "property cannot be null");
         synchronized (LISTENER) {
             RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
             currentProperty.removeListener(LISTENER);
+            // 增加监听器并将规则刷新本地内存
             property.addListener(LISTENER);
             currentProperty = property;
         }
@@ -150,12 +154,12 @@ public class FlowRuleManager {
     }
 
     /**
-    * 规则属性监听器
+    * 流控规则属性监听器
     */
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
+        // 更新规则到内存
         @Override
-//        更新内存
         public synchronized void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
             if (rules != null) {

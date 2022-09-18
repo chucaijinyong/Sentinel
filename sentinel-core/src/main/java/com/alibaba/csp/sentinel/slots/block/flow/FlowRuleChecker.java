@@ -46,11 +46,11 @@ public class FlowRuleChecker {
         if (ruleProvider == null || resource == null) {
             return;
         }
-//        取出所有规则
+       // 取出所有资源名对应的规则，一个资源名可以对应多个规则
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
-//                所有规则都不满足则抛出异常
+               // 所有规则都不满足则抛出流控异常
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
                     throw new FlowException(rule.getLimitApp(), rule);
                 }

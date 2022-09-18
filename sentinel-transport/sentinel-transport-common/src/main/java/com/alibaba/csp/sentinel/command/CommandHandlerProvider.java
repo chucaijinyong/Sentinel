@@ -15,11 +15,14 @@
  */
 package com.alibaba.csp.sentinel.command;
 
-import java.util.*;
-
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides and filters command handlers registered via SPI.
@@ -32,12 +35,14 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
     /**
      * Get all command handlers annotated with {@link CommandMapping} with command name.
-     *
      * @return list of all named command handlers
+     * 通过spi机制加载所有实现了CommandHandler的类，将其封装为处理器集合
      */
     public Map<String, CommandHandler> namedHandlers() {
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
+        // 加载命令处理器实例
         List<CommandHandler> handlers = spiLoader.loadInstanceList();
+        // 将命令处理器实例转换为命令处理器映射
         for (CommandHandler handler : handlers) {
             String name = parseCommandName(handler);
             if (!StringUtil.isEmpty(name)) {

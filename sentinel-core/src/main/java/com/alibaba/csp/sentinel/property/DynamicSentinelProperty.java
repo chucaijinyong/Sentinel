@@ -23,7 +23,13 @@ import java.util.Set;
 
 public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
+    /**
+     * 属性监听器集合
+     */
     protected Set<PropertyListener<T>> listeners = Collections.synchronizedSet(new HashSet<PropertyListener<T>>());
+    /**
+     * 规则
+     */
     private T value = null;
 
     public DynamicSentinelProperty() {
@@ -34,9 +40,13 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         this.value = value;
     }
 
+    /**
+     * 增加监听器并将规则刷新本地内存
+     */
     @Override
     public void addListener(PropertyListener<T> listener) {
         listeners.add(listener);
+        // 将规则刷新本地内存
         listener.configLoad(value);
     }
 
@@ -45,6 +55,9 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         listeners.remove(listener);
     }
 
+    /**
+    * 通过监听器来实现的规则更新
+    */
     @Override
     public boolean updateValue(T newValue) {
         if (isEqual(value, newValue)) {
@@ -53,7 +66,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         RecordLog.info("[DynamicSentinelProperty] Config will be updated to: {}", newValue);
 
         value = newValue;
-//        监听器
+        // 监听器，触发规则更新
         for (PropertyListener<T> listener : listeners) {
             listener.configUpdate(newValue);
         }

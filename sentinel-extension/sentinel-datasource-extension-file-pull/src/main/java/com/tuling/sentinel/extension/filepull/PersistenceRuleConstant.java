@@ -12,14 +12,14 @@ import java.util.Map;
 public class PersistenceRuleConstant {
 
     /**
-     * 存储文件路径
+     * 存储文件路径 user.home.sentinel.rules
      */
     public static final String storePath = System.getProperty("user.home") + File.separator + "sentinel" + File.separator + "rules";
 
     /**
      * 各种存储sentinel规则映射map
      */
-    public static final Map rulesMap = new HashMap<String,String>();
+    public static final Map RULES_MAP = new HashMap<String,String>();
 
     //流控规则文件
     public static final String FLOW_RULE_PATH = "flowRulePath";
@@ -37,10 +37,10 @@ public class PersistenceRuleConstant {
     public static final String HOT_PARAM_RULE = "hotParamRulePath";
 
     static {
-        rulesMap.put(FLOW_RULE_PATH,storePath+ File.separator +"flowRule.json");
-        rulesMap.put(DEGRAGE_RULE_PATH,storePath+File.separator +"degradeRule.json");
-        rulesMap.put(SYSTEM_RULE_PATH,storePath+File.separator +"systemRule.json");
-        rulesMap.put(AUTH_RULE_PATH,storePath+File.separator +"authRule.json");
-        rulesMap.put(HOT_PARAM_RULE,storePath+File.separator +"hotParamRule.json");
+        RULES_MAP.put(FLOW_RULE_PATH,storePath+ File.separator +"flowRule.json");
+        RULES_MAP.put(DEGRAGE_RULE_PATH,storePath+File.separator +"degradeRule.json");
+        RULES_MAP.put(SYSTEM_RULE_PATH,storePath+File.separator +"systemRule.json");
+        RULES_MAP.put(AUTH_RULE_PATH,storePath+File.separator +"authRule.json");
+        RULES_MAP.put(HOT_PARAM_RULE,storePath+File.separator +"hotParamRule.json");
     }
 }

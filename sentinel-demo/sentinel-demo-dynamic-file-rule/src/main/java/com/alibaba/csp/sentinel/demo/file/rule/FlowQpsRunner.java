@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Flow Rule demo.
@@ -55,6 +55,9 @@ class FlowQpsRunner {
         timer.start();
     }
 
+    /**
+    * 运行任务，对通过的，阻塞的和总的请求进行统计
+    */
     static final class RunTask implements Runnable {
         @Override
         public void run() {
@@ -62,6 +65,7 @@ class FlowQpsRunner {
                 Entry entry = null;
 
                 try {
+                    // 对资源名称为key的资源进行保护
                     entry = SphU.entry(KEY);
                     // token acquired, means pass
                     pass.addAndGet(1);
@@ -78,6 +82,7 @@ class FlowQpsRunner {
 
                 Random random2 = new Random();
                 try {
+                    // 休息50毫秒，1分钟至少会请求20次以上
                     TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
                 } catch (InterruptedException e) {
                     // ignore

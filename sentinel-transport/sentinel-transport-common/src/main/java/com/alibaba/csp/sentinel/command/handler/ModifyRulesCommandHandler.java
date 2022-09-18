@@ -47,6 +47,9 @@ import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
     private static final int FASTJSON_MINIMAL_VER = 0x01020C00;
 
+    /**
+    * 更新配置
+    */
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         // XXX from 1.7.2, force to fail when fastjson is older than 1.2.12
@@ -69,15 +72,16 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         }
 
         RecordLog.info("Receiving rule change (type: {}): {}", type, data);
-
         String result = "success";
-//        判断属于那种类型，进行处理
+       // 判断属于那种类型，进行处理
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
-//            解析流控规则，并加载规则，更新最新规则到缓存map中
+           // 解析流控规则
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
+            // 加载规则，并更新最新规则到缓存map中
             FlowRuleManager.loadRules(flowRules);
-//            获取WritableDataSource<List<FlowRule>> flowDataSource写数据源，此处是扩展点，我们只需要实现WritableDataSource
-//            通过该方法WritableDataSourceRegistry.registerFlowDataSource注册进去就行，参考com.tuling.sentinel.extension.filepull.FileDataSourceInit.dealDegradeRules
+           // 获取WritableDataSource<List<FlowRule>> flowDataSource写数据源，此处是扩展点，我们只需要实现WritableDataSource，就可以实现配置持久化，这个对我们来说很重要，因为pull模式我们就是基于这个扩展点来实现的。
+            // 默认有FileWritableDataSource，但是我们没配置所以就不会使用。写数据源之后如何读呢？可以参考本包下的ReadableDataSource的实现
+           // 通过该方法WritableDataSourceRegistry.registerFlowDataSource注册进去就行，参考com.tuling.sentinel.extension.filepull.FileDataSourceInit.dealDegradeRules
             if (!writeToDataSource(getFlowDataSource(), flowRules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }

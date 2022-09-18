@@ -40,8 +40,12 @@ public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleE
     @Autowired
     private ConfigService configService;
 
+    /**
+     * 从nacos中获取流控规则
+     * FlowRule-》FlowRuleEntity
+     */
     @Override
-    public List<FlowRuleEntity> getRules(String appName,String ip,Integer port) throws NacosException {
+    public List<FlowRuleEntity> getRules(String appName, String ip, Integer port) throws NacosException {
         // 从Nacos配置中心拉取配置
         String rules = configService.getConfig(
                 appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX,
@@ -49,8 +53,8 @@ public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleE
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-//        nacos中存放的配置文件是json格式的string类型的字符串，所以需要将string转换为FlowRule，而控制台需要FlowRuleEntity，
-//        所以需要将FlowRule转换为FlowRuleEntity
+        // nacos中存放的配置文件是json格式的string类型的字符串，所以需要将string转换为FlowRule，而控制台需要FlowRuleEntity，
+        // 所以需要将FlowRule转换为FlowRuleEntity
         List<FlowRule> list = JSON.parseArray(rules, FlowRule.class);
         // FlowRule------->FlowRuleEntity
         return list.stream().map(rule ->

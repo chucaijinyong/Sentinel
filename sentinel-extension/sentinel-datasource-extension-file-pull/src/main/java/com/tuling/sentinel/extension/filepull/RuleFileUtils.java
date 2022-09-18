@@ -26,7 +26,7 @@ public class RuleFileUtils {
         Iterator<String> ruleFilePathIter = ruleFilePathSet.iterator();
         while (ruleFilePathIter.hasNext()) {
             String ruleFilePathKey = ruleFilePathIter.next();
-            String ruleFilePath  = PersistenceRuleConstant.rulesMap.get(ruleFilePathKey).toString();
+            String ruleFilePath  = PersistenceRuleConstant.RULES_MAP.get(ruleFilePathKey).toString();
             File ruleFile = new File(ruleFilePath);
             if(!ruleFile.exists()) {
                 ruleFile.createNewFile();

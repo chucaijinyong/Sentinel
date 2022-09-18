@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author Fox
  */
 @Component("paramFlowRuleNacosProvider")
@@ -40,15 +39,14 @@ public class ParamFlowRuleNacosProvider implements DynamicRuleProvider<List<Para
 
 
     @Override
-    public List<ParamFlowRuleEntity> getRules(String appName,String ip,Integer port) throws Exception {
+    public List<ParamFlowRuleEntity> getRules(String appName, String ip, Integer port) throws Exception {
         String rules = configService.getConfig(appName + NacosConfigUtil.PARAM_FLOW_DATA_ID_POSTFIX,
                 NacosConfigUtil.GROUP_ID, NacosConfigUtil.READ_TIMEOUT);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
+        // 解析json为ParamFlowRule
         List<ParamFlowRule> list = JSON.parseArray(rules, ParamFlowRule.class);
-        return list.stream().map(rule ->
-                ParamFlowRuleEntity.fromParamFlowRule(appName, ip, port, rule))
-                .collect(Collectors.toList());
+        return list.stream().map(rule -> ParamFlowRuleEntity.fromParamFlowRule(appName, ip, port, rule)).collect(Collectors.toList());
     }
 }

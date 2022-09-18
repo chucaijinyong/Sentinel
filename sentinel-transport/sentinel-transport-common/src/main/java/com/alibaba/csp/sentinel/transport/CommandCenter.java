@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.transport;
 
 /**
  * @author Eric Zhao
+ * 命令中心
  */
 public interface CommandCenter {
 

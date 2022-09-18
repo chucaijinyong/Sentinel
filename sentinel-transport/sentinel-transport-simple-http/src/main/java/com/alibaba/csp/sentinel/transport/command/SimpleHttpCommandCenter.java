@@ -15,6 +15,15 @@
  */
 package com.alibaba.csp.sentinel.transport.command;
 
+import com.alibaba.csp.sentinel.command.CommandHandler;
+import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.transport.CommandCenter;
+import com.alibaba.csp.sentinel.transport.command.http.HttpEventTask;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,23 +31,7 @@ import java.net.SocketException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.command.CommandHandler;
-import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
-import com.alibaba.csp.sentinel.transport.CommandCenter;
-import com.alibaba.csp.sentinel.transport.command.http.HttpEventTask;
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import java.util.concurrent.*;
 
 /***
  * The simple command center provides service to exchange information.
@@ -52,6 +45,10 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final int DEFAULT_SERVER_SO_TIMEOUT = 3000;
     private static final int DEFAULT_PORT = 8719;
 
+    /**
+    * key为commandName，即@CommandMapping中定义的name属性
+     * value为对应的CommandHandler的具体实现类
+    */
     @SuppressWarnings("rawtypes")
     private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
@@ -62,11 +59,14 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
     private ServerSocket socketReference;
 
+    /**
+    * 在启动之前，对命令处理器集合进行初始化并注册
+    */
     @Override
     @SuppressWarnings("rawtypes")
     public void beforeStart() throws Exception {
-        // Register handlers
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
+        // Register handlers
         registerCommands(handlers);
     }
 
@@ -185,6 +185,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
             while (true) {
                 Socket socket = null;
                 try {
+                    // 感知请求，获取socket事件
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
                     HttpEventTask eventTask = new HttpEventTask(socket);
@@ -210,6 +211,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
     }
 
+    /**
+    * 这个handlerMap在beforeStart步骤已经初始化
+    */
     @SuppressWarnings("rawtypes")
     public static CommandHandler getHandler(String commandName) {
         return handlerMap.get(commandName);
@@ -224,6 +228,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
     }
 
+    /**
+    * 注册命令处理器
+    */
     @SuppressWarnings("rawtypes")
     public static void registerCommand(String commandName, CommandHandler handler) {
         if (StringUtil.isEmpty(commandName)) {

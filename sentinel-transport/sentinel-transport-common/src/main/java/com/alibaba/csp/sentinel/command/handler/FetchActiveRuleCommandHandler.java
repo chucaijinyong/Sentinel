@@ -31,6 +31,9 @@ import com.alibaba.fastjson.JSON;
 @CommandMapping(name = "getRules", desc = "get all active rules by type, request param: type={ruleType}")
 public class FetchActiveRuleCommandHandler implements CommandHandler<String> {
 
+    /**
+    * 没看到有参数param类型处理的
+    */
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         String type = request.getParam("type");

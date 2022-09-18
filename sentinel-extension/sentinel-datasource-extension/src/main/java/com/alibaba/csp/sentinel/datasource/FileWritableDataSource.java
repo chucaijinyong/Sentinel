@@ -15,17 +15,15 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
-
 /**
  * A {@link WritableDataSource} based on file.
- *
  * @param <T> data type
  * @author Eric Zhao
  * @since 0.2.0
@@ -33,7 +31,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
-
+    /**
+     * 配置编码器，将sentinel的配置转化为json格式的字符串
+     */
     private final Converter<T, String> configEncoder;
     private final File file;
     private final Charset charset;

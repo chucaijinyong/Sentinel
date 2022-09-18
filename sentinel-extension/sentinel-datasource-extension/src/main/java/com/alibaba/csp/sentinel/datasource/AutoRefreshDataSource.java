@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * A {@link ReadableDataSource} automatically fetches the backend data.
@@ -39,12 +39,16 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
         startTimerService();
     }
 
+    /**
+    * 自动更新数据源
+    */
     public AutoRefreshDataSource(Converter<S, T> configParser, final long recommendRefreshMs) {
         super(configParser);
         if (recommendRefreshMs <= 0) {
             throw new IllegalArgumentException("recommendRefreshMs must > 0, but " + recommendRefreshMs + " get");
         }
         this.recommendRefreshMs = recommendRefreshMs;
+        // 起个定时任务,默认每隔3秒更新一次数据
         startTimerService();
     }
 
@@ -56,9 +60,11 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
             @Override
             public void run() {
                 try {
+                    // 文件没变化直接返回
                     if (!isModified()) {
                         return;
                     }
+                    // 有变化则加载文件,然后更新变化的文件到内存中
                     T newValue = loadConfig();
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {

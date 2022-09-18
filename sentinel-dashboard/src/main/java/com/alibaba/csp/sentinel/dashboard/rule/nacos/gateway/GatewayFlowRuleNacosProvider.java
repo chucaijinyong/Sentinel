@@ -39,6 +39,10 @@ public class GatewayFlowRuleNacosProvider implements DynamicRuleProvider<List<Ga
     @Autowired
     private ConfigService configService;
 
+    /**
+    * 从nacos中获取流控规则
+     * GatewayFlowRule-》GatewayFlowRuleEntity
+    */
     @Override
     public List<GatewayFlowRuleEntity> getRules(String appName,String ip,Integer port) throws Exception {
         String rules = configService.getConfig(appName + NacosConfigUtil.GATEWAY_FLOW_DATA_ID_POSTFIX,

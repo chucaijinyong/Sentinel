@@ -89,33 +89,35 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         this.groupId = groupId;
         this.dataId = dataId;
         this.properties = properties;
+        // 此时只是创建了一个configListener
         this.configListener = new Listener() {
             @Override
             public Executor getExecutor() {
                 return pool;
             }
-
-//            nacos的配置文件发生变化会触发监听器的行为
+           // nacos的配置文件发生变化会触发监听器的行为
             @Override
             public void receiveConfigInfo(final String configInfo) {
                 RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
                     properties, dataId, groupId, configInfo);
                 log.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
                         properties, dataId, groupId, configInfo);
-
-//                解析变更的配置，将最新的配置更新到缓存
+               // 解析变更的配置，将最新的配置更新到缓存
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
                 log.info("newValue"+newValue);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
             }
         };
-//        初始化配置文件监听器，将配置文件和监听器进行绑定
+       // 将配置文件和监听器进行绑定，一旦配置有变化就会执行监听器的业务逻辑
         initNacosListener();
-//        从nacos中加载最新配置到缓存
+       // 从nacos中加载最新配置到缓存
         loadInitialConfig();
     }
 
+    /**
+    * 从nacos中加载最新配置到缓存
+    */
     private void loadInitialConfig() {
         try {
             T newValue = loadConfig();

@@ -100,14 +100,14 @@ public final class SpiLoader<S> {
     // Default provider class
     private Class<? extends S> defaultClass = null;
 
-    // The Service class, must be interface or abstract class
+    // The Service class, must be interface or abstract class 必须是接口或抽象类
     private Class<S> service;
 
     /**
      * Create SpiLoader instance via Service class
      * Cached by className, and load from cache first
      *
-     * @param service Service class
+     * @param service Service class  比如：CommandHandler.class
      * @param <T>     Service type
      * @return SpiLoader instance
      */
@@ -122,6 +122,7 @@ public final class SpiLoader<S> {
             synchronized (SpiLoader.class) {
                 spiLoader = SPI_LOADER_MAP.get(className);
                 if (spiLoader == null) {
+                    // 此时给SpiLoader中的service属性赋值CommandHandler.class
                     SPI_LOADER_MAP.putIfAbsent(className, new SpiLoader<>(service));
                     spiLoader = SPI_LOADER_MAP.get(className);
                 }
@@ -314,7 +315,8 @@ public final class SpiLoader<S> {
         if (!loaded.compareAndSet(false, true)) {
             return;
         }
-
+        // SPI_FILE_PREFIX = "META-INF/services/"  service为com.alibaba.csp.sentinel.command.CommandHandler
+        // 比如在sentinel-transport-common项目中就有CommandHandler相关的spi的定义
         String fullFileName = SPI_FILE_PREFIX + service.getName();
         ClassLoader classLoader;
         if (SentinelConfig.shouldUseContextClassloader()) {

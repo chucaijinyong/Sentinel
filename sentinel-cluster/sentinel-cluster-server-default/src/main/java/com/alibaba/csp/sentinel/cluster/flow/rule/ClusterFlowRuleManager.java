@@ -59,6 +59,7 @@ public final class ClusterFlowRuleManager {
 
     /**
      * (flowId, clusterRule)
+     * 内存
      */
     private static final Map<Long, FlowRule> FLOW_RULES = new ConcurrentHashMap<>();
     /**
@@ -369,7 +370,7 @@ public final class ClusterFlowRuleManager {
                 return !ruleMap.containsKey(flowId);
             }
         });
-
+        // 更新内存规则
         FLOW_RULES.putAll(ruleMap);
         NAMESPACE_FLOW_ID_MAP.put(namespace, flowIdSet);
     }

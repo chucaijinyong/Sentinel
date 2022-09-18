@@ -37,27 +37,31 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 /**
- * InitFunc实现类，处理dataSource初始化逻辑
+ * InitFunc实现类，处理dataSource初始化逻辑。
+ * 拉模式的扩展原理：
+ * HandlerInterceptor=》
+ *     AbstractSentinelInterceptor.preHandle
+ *         Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+ *             Env的InitExecutor.doInit();=》w.func.init();
+ *                 CommandCenterInitFunc
+ *                 FileDataSourceInit
  *
- * @author Fox
  */
 public class FileDataSourceInit implements InitFunc {
 
     @Override
     public void init() throws Exception {
-        //创建文件存储目录
+        //创建文件存储目录 user.home.sentinel.rules
         RuleFileUtils.mkdirIfNotExits(PersistenceRuleConstant.storePath);
-
         //创建规则文件
-        RuleFileUtils.createFileIfNotExits(PersistenceRuleConstant.rulesMap);
-
+        RuleFileUtils.createFileIfNotExits(PersistenceRuleConstant.RULES_MAP);
         //处理流控规则逻辑  配置读写数据源
         dealFlowRules();
         // 处理降级规则
         dealDegradeRules();
         // 处理系统规则
         dealSystemRules();
-        // 处理热点参数规则
+        // 处理热点参数规则,需要引入sentinel-parameter-flow-control依赖
         dealParamFlowRules();
         // 处理授权规则
         dealAuthRules();
@@ -69,30 +73,29 @@ public class FileDataSourceInit implements InitFunc {
      * 写数据源是为了配置文件持久化
     */
     private void dealFlowRules() throws FileNotFoundException {
-        String ruleFilePath = PersistenceRuleConstant.rulesMap.get(PersistenceRuleConstant.FLOW_RULE_PATH).toString();
-
-        //创建流控规则的可读数据源
+        // 找到规则文件的路径
+        String ruleFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.FLOW_RULE_PATH).toString();
+        //创建流控规则的可读数据源，为文件路径和流控规则解析器赋值
         ReadableDataSource<String, List<FlowRule>> flowRuleRDS = new FileRefreshableDataSource(
                 ruleFilePath, RuleListConverterUtils.flowRuleListParser
         );
-
-        // 文件变化更新到内存==》将可读数据源注册至FlowRuleManager 这样当规则文件发生变化时，就会更新规则到内存
-//        【注册监听器SentinelProperty.addListener(LISTENER);，用来在更新规则时更新缓存时使用，更新规则时会执行SentinelProperty的updateValue方法，遍历所有监听器，执行监听器的configUpdate】
+        // 将可读数据源注册至FlowRuleManager，刷新配置到内存，并增加规则文件监听器，这样当规则文件发生变化时，就会把最新的规则更新到内存
+        // 具体实现：【注册监听器SentinelProperty.addListener(LISTENER);，用来在更新规则时更新缓存时使用，更新规则时会执行SentinelProperty的updateValue方法，遍历所有监听器，执行监听器的configUpdate】
         FlowRuleManager.register2Property(flowRuleRDS.getProperty());
 
-
+        // 创建写数据源
         WritableDataSource<List<FlowRule>> flowRuleWDS = new FileWritableDataSource<List<FlowRule>>(
                 ruleFilePath, RuleListConverterUtils.flowRuleEnCoding
         );
 
-        // 控制台变化更新到内存持久化到文件==》将可写数据源注册至 transport 模块的 WritableDataSourceRegistry 中.
-        // 这样收到控制台推送的规则时，Sentinel 会先更新到内存，然后将规则写入到文件中.
+        // 控制台变化更新到内存持久化到文件
+        // 将可写数据源注册至 transport 模块的 WritableDataSourceRegistry 中.这样收到控制台推送的规则时，Sentinel 会先更新到内存，然后将规则写入到文件中.
         WritableDataSourceRegistry.registerFlowDataSource(flowRuleWDS);
     }
 
     private void dealDegradeRules() throws FileNotFoundException {
         //讲解规则文件路径
-        String degradeRuleFilePath = PersistenceRuleConstant.rulesMap.get(PersistenceRuleConstant.DEGRAGE_RULE_PATH).toString();
+        String degradeRuleFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.DEGRAGE_RULE_PATH).toString();
 
         //创建流控规则的可读数据源，如果不持久化到文件中的话，可以换成其他数据源
         ReadableDataSource<String, List<DegradeRule>> degradeRuleRDS = new FileRefreshableDataSource(
@@ -116,7 +119,7 @@ public class FileDataSourceInit implements InitFunc {
 
     private void dealSystemRules() throws FileNotFoundException {
         //讲解规则文件路径
-        String systemRuleFilePath = PersistenceRuleConstant.rulesMap.get(PersistenceRuleConstant.SYSTEM_RULE_PATH).toString();
+        String systemRuleFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.SYSTEM_RULE_PATH).toString();
 
         //创建流控规则的可读数据源
         ReadableDataSource<String, List<SystemRule>> systemRuleRDS = new FileRefreshableDataSource(
@@ -139,7 +142,7 @@ public class FileDataSourceInit implements InitFunc {
 
     private void dealParamFlowRules() throws FileNotFoundException {
         //讲解规则文件路径
-        String paramFlowRuleFilePath = PersistenceRuleConstant.rulesMap.get(PersistenceRuleConstant.HOT_PARAM_RULE).toString();
+        String paramFlowRuleFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.HOT_PARAM_RULE).toString();
 
         //创建流控规则的可读数据源
         ReadableDataSource<String, List<ParamFlowRule>> paramFlowRuleRDS = new FileRefreshableDataSource(
@@ -161,7 +164,7 @@ public class FileDataSourceInit implements InitFunc {
 
     private void dealAuthRules() throws FileNotFoundException {
         //讲解规则文件路径
-        String authFilePath = PersistenceRuleConstant.rulesMap.get(PersistenceRuleConstant.AUTH_RULE_PATH).toString();
+        String authFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.AUTH_RULE_PATH).toString();
 
         //创建流控规则的可读数据源
         ReadableDataSource<String, List<AuthorityRule>> authRuleRDS = new FileRefreshableDataSource(

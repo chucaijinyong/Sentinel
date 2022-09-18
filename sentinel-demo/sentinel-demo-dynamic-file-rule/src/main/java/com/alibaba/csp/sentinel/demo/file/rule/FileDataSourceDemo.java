@@ -15,12 +15,9 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
-import java.net.URLDecoder;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.Rule;
@@ -32,6 +29,9 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+
+import java.net.URLDecoder;
+import java.util.List;
 
 /**
  * <p>
@@ -63,8 +63,9 @@ public class FileDataSourceDemo {
 
     public static void main(String[] args) throws Exception {
         FileDataSourceDemo demo = new FileDataSourceDemo();
+        // 获取配置文件中的属性并为属性注册监听器，将属性刷新到本地内存
+        // 注意测试里的json配置文件更改后要保存才能生效
         demo.listenRules();
-
         /*
          * Start to require tokens, rate will be limited by rule in FlowRule.json
          */
@@ -73,32 +74,43 @@ public class FileDataSourceDemo {
         runner.tick();
     }
 
+    /**
+    * 获取配置文件中的属性并为属性注册监听器，将属性刷新到本地内存
+    */
     private void listenRules() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
+        // 获取json文件对应的内容
         String flowRulePath = URLDecoder.decode(classLoader.getResource("FlowRule.json").getFile(), "UTF-8");
-        String degradeRulePath = URLDecoder.decode(classLoader.getResource("DegradeRule.json").getFile(), "UTF-8");
-        String systemRulePath = URLDecoder.decode(classLoader.getResource("SystemRule.json").getFile(), "UTF-8");
+        // String degradeRulePath = URLDecoder.decode(classLoader.getResource("DegradeRule.json").getFile(), "UTF-8");
+        // String systemRulePath = URLDecoder.decode(classLoader.getResource("SystemRule.json").getFile(), "UTF-8");
 
         // Data source for FlowRule
+        // 构造方法初始化
         FileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<>(
             flowRulePath, flowRuleListParser);
+        // 为属性注册监听器，并将规则刷新本地内存
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
-        // Data source for DegradeRule
-        FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource
-            = new FileRefreshableDataSource<>(
-            degradeRulePath, degradeRuleListParser);
-        DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
-
-        // Data source for SystemRule
-        FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource
-            = new FileRefreshableDataSource<>(
-            systemRulePath, systemRuleListParser);
-        SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
+        // // Data source for DegradeRule
+        // FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource
+        //     = new FileRefreshableDataSource<>(
+        //     degradeRulePath, degradeRuleListParser);
+        // DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
+        //
+        // // Data source for SystemRule
+        // FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource
+        //     = new FileRefreshableDataSource<>(
+        //     systemRulePath, systemRuleListParser);
+        // SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 
-    private Converter<String, List<FlowRule>> flowRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<FlowRule>>() {});
+    // 将数据源转换为List<FlowRule>
+    private Converter<String, List<FlowRule>> flowRuleListParser = new Converter<String, List<FlowRule>>() {
+        @Override
+        public List<FlowRule> convert(String source) {
+            return JSON.parseObject(source,new TypeReference<List<FlowRule>>() {});
+        }
+    };
     private Converter<String, List<DegradeRule>> degradeRuleListParser = source -> JSON.parseObject(source,
         new TypeReference<List<DegradeRule>>() {});
     private Converter<String, List<SystemRule>> systemRuleListParser = source -> JSON.parseObject(source,

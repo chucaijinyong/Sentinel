@@ -90,7 +90,7 @@ public class HttpEventTask implements Runnable {
                 processPostRequest(inputStream, request);
             }
 
-            // Validate the target command.
+            // Validate the target command.  获取请求中的commandName
             String commandName = HttpCommandUtils.getTarget(request);
             if (StringUtil.isBlank(commandName)) {
                 writeResponse(printWriter, StatusCode.BAD_REQUEST, INVALID_COMMAND_MESSAGE);
@@ -98,6 +98,8 @@ public class HttpEventTask implements Runnable {
             }
 
             // Find the matching command handler.
+            // 根据请求中的commandName获取commandHandler，从带有注解的类上@CommandMapping，找到和commandName一样的类即要处理的commandHandler，来处理对应的事件
+            // 比如请求的commandName是setRules，那么找到的就是ModifyRulesCommandHandler，它的注解@CommandMapping(name = "setRules")
             CommandHandler<?> commandHandler = SimpleHttpCommandCenter.getHandler(commandName);
             if (commandHandler != null) {
                 CommandResponse<?> response = commandHandler.handle(request);
