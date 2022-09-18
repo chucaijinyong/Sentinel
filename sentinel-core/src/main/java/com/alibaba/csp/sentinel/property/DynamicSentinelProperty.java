@@ -56,7 +56,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
     }
 
     /**
-    * 通过监听器来实现的规则更新
+    * 通过sentinel的监听器来实现的规则更新
     */
     @Override
     public boolean updateValue(T newValue) {

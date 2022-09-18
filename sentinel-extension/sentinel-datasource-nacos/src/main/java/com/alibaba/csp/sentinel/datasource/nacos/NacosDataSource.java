@@ -95,7 +95,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
             public Executor getExecutor() {
                 return pool;
             }
-           // nacos的配置文件发生变化会触发监听器的行为
+           // nacos的配置文件发生变化会触发nacos配置监听器的行为
             @Override
             public void receiveConfigInfo(final String configInfo) {
                 RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
@@ -106,10 +106,11 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
                 log.info("newValue"+newValue);
                 // Update the new value to the property.
+                // 通过调用sentinel的属性监听器，从而完成配置的更新
                 getProperty().updateValue(newValue);
             }
         };
-       // 将配置文件和监听器进行绑定，一旦配置有变化就会执行监听器的业务逻辑
+       // 将nacos的配置文件和nacos的监听器进行绑定，一旦配置有变化就会执行nacos的监听器的业务逻辑
         initNacosListener();
        // 从nacos中加载最新配置到缓存
         loadInitialConfig();

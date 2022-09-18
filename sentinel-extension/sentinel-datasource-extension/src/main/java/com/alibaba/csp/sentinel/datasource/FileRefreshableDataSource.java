@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * <p>
@@ -129,6 +129,10 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         }
     }
 
+    /**
+    * 确定文件是否修改是通过获取文件的修改时间和上一次的修改时间比较确定的
+     * 父类在判断是否是更新的文件时会调该方法
+    */
     @Override
     protected boolean isModified() {
         long curLastModified = file.lastModified();

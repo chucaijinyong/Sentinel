@@ -75,7 +75,8 @@ public class FileDataSourceInit implements InitFunc {
     private void dealFlowRules() throws FileNotFoundException {
         // 找到规则文件的路径
         String ruleFilePath = PersistenceRuleConstant.RULES_MAP.get(PersistenceRuleConstant.FLOW_RULE_PATH).toString();
-        //创建流控规则的可读数据源，为文件路径和流控规则解析器赋值
+        //创建流控规则的可读数据源，为文件路径和流控规则解析器赋值。FileRefreshableDataSource该类的父类AutoRefreshDataSource中有一个定时任务startTimerService，
+        // 不停地去获取配置文件中的值，如果有变更则更新配置，属于主动拉的模式，如果服务较多则不使用这种，毕竟拉模式比较耗性能
         ReadableDataSource<String, List<FlowRule>> flowRuleRDS = new FileRefreshableDataSource(
                 ruleFilePath, RuleListConverterUtils.flowRuleListParser
         );
