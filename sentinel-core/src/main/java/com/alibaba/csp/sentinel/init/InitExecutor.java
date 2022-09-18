@@ -15,13 +15,12 @@
  */
 package com.alibaba.csp.sentinel.init;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Load registered init functions and execute in order.
@@ -37,6 +36,7 @@ public final class InitExecutor {
      * will immediately be interrupted and the application will exit.
      *
      * The initialization will be executed only once.
+     * 通过Spi机制获取实现了InitFunc的类，对他们进行初始化
      */
     public static void doInit() {
         if (!initialized.compareAndSet(false, true)) {

@@ -19,6 +19,7 @@ package com.alibaba.csp.sentinel.slotchain;
  * Link all processor slots as a chain.
  *
  * @author qinan.qn
+ * 槽链也属于一个特殊的节点。槽链里放了所有节点
  */
 public abstract class ProcessorSlotChain extends AbstractLinkedProcessorSlot<Object> {
 

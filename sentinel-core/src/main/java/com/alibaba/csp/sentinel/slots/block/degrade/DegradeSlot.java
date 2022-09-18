@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.List;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
@@ -27,6 +25,8 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.spi.Spi;
+
+import java.util.List;
 
 /**
  * A {@link ProcessorSlot} dedicates to circuit breaking.
@@ -46,6 +46,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void performChecking(Context context, ResourceWrapper r) throws BlockException {
+        // 熔断器
         List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             return;
@@ -73,6 +74,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (curEntry.getBlockError() == null) {
             // passed request
             for (CircuitBreaker circuitBreaker : circuitBreakers) {
+                // 慢调用和异常比例
                 circuitBreaker.onRequestComplete(context);
             }
         }

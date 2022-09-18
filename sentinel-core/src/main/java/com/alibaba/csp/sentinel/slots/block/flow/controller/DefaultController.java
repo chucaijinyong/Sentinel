@@ -45,8 +45,12 @@ public class DefaultController implements TrafficShapingController {
         return canPass(node, acquireCount, false);
     }
 
+    /**
+    * @param acquireCount 默认值为1
+    */
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        // 根据thread或者qps获取当前资源已经调用的次数
         int curCount = avgUsedTokens(node);
         if (curCount + acquireCount > count) {
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {

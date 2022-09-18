@@ -34,6 +34,7 @@ public final class SlotChainProvider {
      * via {@code lookProcessChain} in {@link com.alibaba.csp.sentinel.CtSph} under lock.
      *
      * @return new created slot chain
+     * 构建槽链
      */
     public static ProcessorSlotChain newSlotChain() {
         if (slotChainBuilder != null) {
@@ -41,6 +42,7 @@ public final class SlotChainProvider {
         }
 
         // Resolve the slot chain builder SPI.
+        // 获取槽链的构造器
         slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault();
 
         if (slotChainBuilder == null) {
@@ -51,6 +53,7 @@ public final class SlotChainProvider {
             RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: {}",
                 slotChainBuilder.getClass().getCanonicalName());
         }
+        // 通过Spi机制,获取类路径下实现了ProcessorSlot的所有实现类，构建槽链
         return slotChainBuilder.build();
     }
 

@@ -15,11 +15,11 @@
  */
 package com.alibaba.csp.sentinel;
 
-import java.lang.reflect.Method;
-
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+
+import java.lang.reflect.Method;
 
 /**
  * <p>The fundamental Sentinel API for recording statistics and performing rule checking for resources.</p>
@@ -309,6 +309,7 @@ public class SphU {
      */
     public static Entry entry(String name, int resourceType, EntryType trafficType, Object[] args)
         throws BlockException {
+        // Env也很重要哦，里面有InitFunc类的初始化
         return Env.sph.entryWithType(name, resourceType, trafficType, 1, args);
     }
 

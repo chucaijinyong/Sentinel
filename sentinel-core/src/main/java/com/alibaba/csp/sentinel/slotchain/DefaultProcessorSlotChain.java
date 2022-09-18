@@ -23,6 +23,9 @@ import com.alibaba.csp.sentinel.context.Context;
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
+    /**
+    * 该first节点属于驱动节点，什么都没做，只是往下游调用
+    */
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
@@ -37,6 +40,7 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
         }
 
     };
+
     AbstractLinkedProcessorSlot<?> end = first;
 
     @Override
@@ -48,6 +52,9 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
         }
     }
 
+    /**
+    * 调该方法构建链条
+    */
     @Override
     public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
         end.setNext(protocolProcessor);

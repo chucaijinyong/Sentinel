@@ -31,6 +31,9 @@ public class Env {
 
     public static final Sph sph = new CtSph();
 
+    /**
+    * 需要重点看下init都做了那些事：通过Spi机制获取实现了InitFunc的类，对他们进行初始化
+    */
     static {
         // If init fails, the process will exit.
         InitExecutor.doInit();

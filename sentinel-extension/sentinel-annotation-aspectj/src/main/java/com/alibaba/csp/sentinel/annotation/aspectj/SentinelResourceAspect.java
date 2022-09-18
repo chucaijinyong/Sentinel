@@ -53,9 +53,11 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         int resourceType = annotation.resourceType();
         Entry entry = null;
         try {
+            // 核心方法，执行责任链
             entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
             return pjp.proceed();
         } catch (BlockException ex) {
+            // 如果是BlockException异常,则找到注解中定义的blockHandler处理类,反射调用其限流方法
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
@@ -72,6 +74,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             throw ex;
         } finally {
             if (entry != null) {
+                // 结束时再走一遍，做一些收尾工作
                 entry.exit(1, pjp.getArgs());
             }
         }

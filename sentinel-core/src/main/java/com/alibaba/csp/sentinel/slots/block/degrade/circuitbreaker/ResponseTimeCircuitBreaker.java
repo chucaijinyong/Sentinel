@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
-import java.util.List;
-import java.util.concurrent.atomic.LongAdder;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -26,6 +23,9 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.List;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Eric Zhao
@@ -72,12 +72,13 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         if (completeTime <= 0) {
             completeTime = TimeUtil.currentTimeMillis();
         }
+        // 调用的响应时间
         long rt = completeTime - entry.getCreateTimestamp();
         if (rt > maxAllowedRt) {
             counter.slowCount.add(1);
         }
         counter.totalCount.add(1);
-
+        // 处理状态改变
         handleStateChangeWhenThresholdExceeded(rt);
     }
 
@@ -85,13 +86,16 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.OPEN) {
             return;
         }
-        
+        // 如果是半开的
         if (currentState.get() == State.HALF_OPEN) {
             // In detecting request
             // TODO: improve logic for half-open recovery
+            // 如果响应时间超过最大允许的响应时间
             if (rt > maxAllowedRt) {
+                // 将半开改为打开
                 fromHalfOpenToOpen(1.0d);
             } else {
+                // 将半开改为关闭
                 fromHalfOpenToClose();
             }
             return;

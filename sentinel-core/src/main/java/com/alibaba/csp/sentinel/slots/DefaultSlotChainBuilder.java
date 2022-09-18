@@ -35,17 +35,22 @@ import java.util.List;
 @Spi(isDefault = true)
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
+    /**
+    * 构建槽链
+    */
     @Override
     public ProcessorSlotChain build() {
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
 
+        // 通过Spi机制,获取类路径下实现了ProcessorSlot的所有实现类
         List<ProcessorSlot> sortedSlotList = SpiLoader.of(ProcessorSlot.class).loadInstanceListSorted();
         for (ProcessorSlot slot : sortedSlotList) {
+            // 剔除AbstractLinkedProcessorSlot
             if (!(slot instanceof AbstractLinkedProcessorSlot)) {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
                 continue;
             }
-
+            // 向上转型后都添加到链里
             chain.addLast((AbstractLinkedProcessorSlot<?>) slot);
         }
 

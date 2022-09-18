@@ -122,10 +122,14 @@ public abstract class AbstractSentinelAspectSupport {
         throw ex;
     }
 
+    /**
+    * 找到注解中定义的blockHandler处理类,反射调用其限流方法
+    */
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Throwable {
 
         // Execute block handler if configured.
+        // 找到注解中定义的blockHandler处理类,反射调用其限流方法
         Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
             annotation.blockHandlerClass());
         if (blockHandlerMethod != null) {
@@ -133,6 +137,7 @@ public abstract class AbstractSentinelAspectSupport {
             // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
+            // 反射调用限流方法
             return invoke(pjp, blockHandlerMethod, args);
         }
 

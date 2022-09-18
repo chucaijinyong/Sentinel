@@ -15,16 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.util.function.BiConsumer;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Eric Zhao
@@ -72,6 +71,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         }
         if (currentState.get() == State.OPEN) {
             // For half-open state we allow a request for probing.
+            // 开关是否应该关闭，如果应该关闭，则将打开改为半开fromOpenToHalfOpen
             return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
         return false;
@@ -122,7 +122,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         }
         return false;
     }
-    
+
     private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
         for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
             observer.onStateChange(prevState, newState, rule, snapshotValue);

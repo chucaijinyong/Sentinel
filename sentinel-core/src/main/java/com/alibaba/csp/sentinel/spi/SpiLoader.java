@@ -107,7 +107,7 @@ public final class SpiLoader<S> {
      * Create SpiLoader instance via Service class
      * Cached by className, and load from cache first
      *
-     * @param service Service class  比如：CommandHandler.class
+     * @param service Service class  比如：CommandHandler.class，SlotChainBuilder.class，ProcessorSlot.class
      * @param <T>     Service type
      * @return SpiLoader instance
      */
@@ -122,7 +122,7 @@ public final class SpiLoader<S> {
             synchronized (SpiLoader.class) {
                 spiLoader = SPI_LOADER_MAP.get(className);
                 if (spiLoader == null) {
-                    // 此时给SpiLoader中的service属性赋值CommandHandler.class
+                    // 如果className是CommandHandler，则会给SpiLoader中的service属性赋值CommandHandler.class
                     SPI_LOADER_MAP.putIfAbsent(className, new SpiLoader<>(service));
                     spiLoader = SPI_LOADER_MAP.get(className);
                 }
@@ -409,6 +409,7 @@ public final class SpiLoader<S> {
         }
 
         sortedClassList.addAll(classList);
+        // 对其进行排序，按照Spi中定义的order顺序，从小到大排列
         Collections.sort(sortedClassList, new Comparator<Class<? extends S>>() {
             @Override
             public int compare(Class<? extends S> o1, Class<? extends S> o2) {

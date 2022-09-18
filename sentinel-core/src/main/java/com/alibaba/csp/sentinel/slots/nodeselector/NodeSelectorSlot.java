@@ -154,6 +154,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
          */
         DefaultNode node = map.get(context.getName());
+        // 构建调用资源的父子路径
         if (node == null) {
             synchronized (this) {
                 node = map.get(context.getName());
@@ -171,6 +172,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
         }
 
         context.setCurNode(node);
+        // 往下调用
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
